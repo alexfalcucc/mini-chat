@@ -76,6 +76,10 @@ INSTALLED_APPS = (
     'allauth.socialaccount.providers.google',
 )
 
+INSTALLED_APPS += (
+    'django_extensions',
+)
+
 SITE_ID = 1
 
 MIDDLEWARE_CLASSES = (
@@ -119,11 +123,8 @@ ACCOUNT_PASSWORD_MIN_LENGTH = 6
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 
 
-
-
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
 DATABASES = {
     'default': config(
         'DATABASE_URL',
@@ -176,7 +177,6 @@ else:  # Assume development mode
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
     }
-
 
 
 TEMPLATE_STRING_IF_INVALID = 'CONTEXT_ERROR'
