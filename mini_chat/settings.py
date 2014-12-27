@@ -15,6 +15,8 @@ from dj_database_url import parse as db_url
 from unipath import Path
 BASE_DIR = Path(__file__).parent
 
+# Templates
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -31,10 +33,33 @@ TESTING = 'test' in sys.argv
 
 ALLOWED_HOSTS = ['.localhost', '127.0.0.1', '.herokuapp.com']
 
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages",
+    "django.core.context_processors.request",
+    "allauth.account.context_processors.account",
+    "allauth.socialaccount.context_processors.socialaccount",
+)
+
+TEMPLATE_CONTEXT_PROCESSORS += ('django.core.context_processors.request',)
+
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
 # Application definition
 
 INSTALLED_APPS = (
+    'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,7 +70,13 @@ INSTALLED_APPS = (
     'devserver',
     'south',
     'mini_chat.core',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 )
+
+SITE_ID = 1
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.cache.UpdateCacheMiddleware',
@@ -61,6 +92,33 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'mini_chat.urls'
 
 WSGI_APPLICATION = 'mini_chat.wsgi.application'
+
+ACCOUNT_ADAPTER = "allauth.account.adapter.DefaultAccountAdapter"
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_CONFIRM_EMAIL_ON_GET = "optional"
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = LOGIN_URL
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = LOGIN_REDIRECT_URL
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 10
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = None
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "Subject is: "
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_REDIRECT_URL = LOGIN_URL
+ACCOUNT_SIGNUP_FORM_CLASS = None  # 'sistema_sga.core.forms.SignupForm'
+ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+# ACCOUNT_USER_DISPLAY (=a callable returning user.username)
+ACCOUNT_USERNAME_MIN_LENGTH = 4
+ACCOUNT_USERNAME_BLACKLIST = ['some_username_youdon\t_want']
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_PASSWORD_INPUT_RENDER_VALUE = False
+ACCOUNT_PASSWORD_MIN_LENGTH = 6
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+
+
 
 
 # Database
@@ -102,15 +160,15 @@ CACHE_ACTIVE = config('CACHE_ACTIVE', default=False, cast=bool)
 if CACHE_ACTIVE:
     CACHES = {
         'default': {
-                'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-                'BINARY': True,
-                'LOCATION': config('CACHE_LOCATION'),
-                'OPTIONS': {
-                    'ketama': True,
-                    'tcp_nodelay': True,
-                },
-                'TIMEOUT': config('CACHE_TIMEOUT', default=500, cast=int),
+            'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+            'BINARY': True,
+            'LOCATION': config('CACHE_LOCATION'),
+            'OPTIONS': {
+                'ketama': True,
+                'tcp_nodelay': True,
             },
+            'TIMEOUT': config('CACHE_TIMEOUT', default=500, cast=int),
+        },
     }
 else:  # Assume development mode
     CACHES = {
@@ -120,9 +178,7 @@ else:  # Assume development mode
     }
 
 
-# Templates
-from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
-TEMPLATE_CONTEXT_PROCESSORS += ('django.core.context_processors.request',)
+
 TEMPLATE_STRING_IF_INVALID = 'CONTEXT_ERROR'
 
 
@@ -140,12 +196,12 @@ LOGGING = {
         },
     },
     'filters': {
-     'require_debug_true': {
-         '()': 'django.utils.log.RequireDebugTrue',
-         },
-     'skip_on_testing': {
-        '()': 'django.utils.log.CallbackFilter',
-        'callback': skip_on_testing,
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+        'skip_on_testing': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': skip_on_testing,
         },
     },
     'handlers': {
